@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Детали заявки</h2>
+<div>
+    <dl class="dl-horizontal">
+        <dt>Заголовок</dt><dd>{{ item.title }}</dd>
+        <dt>Автор</dt><dd>{{ item.author.username }} {% if item.author.full_name %}({{ item.author.full_name }}){% endif %}</dd>
+        <dt>Дата</dt><dd>{{ item.created_at.strftime('%Y-%m-%d') }}</dd>
+        <dt>Описание</dt><dd>{{ item.description }}</dd>
+        {% if item.computer_name %}
+        <dt>Компьютер</dt><dd>{{ item.computer_name }}</dd>
+        {% endif %}
+        {% if item.building %}
+        <dt>Корпус</dt><dd>{{ item.building }}</dd>
+        {% endif %}
+        {% if item.room %}
+        <dt>Кабинет</dt><dd>{{ item.room }}</dd>
+        {% endif %}
+        {% if item.phone %}
+        <dt>Телефон</dt><dd>{{ item.phone }}</dd>
+        {% endif %}
+    </dl>
+</div>
+<p>
+    <a href="{{ url_for('edit', id=item.id) }}">Редактировать</a> |
+    <a href="{{ url_for('index') }}">Назад к списку</a>
+</p>
+{% endblock %}

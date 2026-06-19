@@ -1,0 +1,399 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="row" style="margin-bottom: 10px; margin-left: 1px;">
+    <div class="col-md-12">
+        <ul class="nav nav-tabs" style="display: flex; align-items: center;">       
+            <li role="presentation" class="{% if tab == 'new' %}active{% endif %}"><a href="/?tab=new">Новые <span class="badge">{{ counts.new }}</span></a></li>
+            <li role="presentation" class="{% if tab == 'inprogress' %}active{% endif %}"><a href="/?tab=inprogress">В работе <span class="badge">{{ counts.inprogress }}</span></a></li>
+            <li role="presentation" class="{% if tab == 'closed' %}active{% endif %}"><a href="/?tab=closed">Закрыты <span class="badge">{{ counts.closed }}</span></a></li>
+            <li role="presentation" class="{% if tab == 'all' %}active{% endif %}"><a href="/?tab=all">Все заявки <span class="badge">{{ counts.all }}</span></a></li>
+            <li style="margin-left:auto; display:flex; align-items:center; gap: 8px;">
+                <form method="get" style="display:flex; align-items:center; margin:0;">
+                    <input type="hidden" name="tab" value="{{ tab }}">
+                    <div class="input-group" style="width:240px;">
+                        <input type="text" name="q" class="form-control input-sm" placeholder="Поиск по всем полям" value="{{ q }}" style="width:240px;">
+                        <span class="input-group-btn">
+                            <button type="submit" class="btn btn-default btn-sm">Найти <span class="glyphicon glyphicon-search"></span></button>
+                        </span>
+                    </div>
+                </form>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="col-xs-12 col-md-5">
+    <div style="margin-bottom: 10px; border-radius: 8px; overflow: hidden;">
+        <a class="btn btn-success btn-block" href="/create">
+            <strong>Создать новую заявку</strong> <span class="glyphicon glyphicon-plus"></span>
+        </a>
+    </div>
+
+    <div class="box" style="border: 1px solid #ddd; border-radius: 10px; background-color: #fff; padding: 15px; margin-bottom: 20px;">
+        
+        {% if not tickets %}
+            <div class="alert alert-info">Заявок нет.</div>
+        {% endif %}
+
+        <div class="list-group">
+            {% for ticket in tickets %}
+                    <a href="/?selected={{ ticket.id }}&tab={{ tab }}&page={{ pagination.page if pagination else 1 }}&q={{ q }}" 
+                    class="list-group-item"
+                    style="margin-bottom: 10px; border-radius: 5px; border: 1px solid #ddd; 
+                            {% if selected_ticket and selected_ticket.id == ticket.id %} 
+                                background-color: #ebebeb; border-color: #adadad; color: #333; 
+                            {% endif %}">
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span class="text-muted">ID: {{ ticket.id }}</span>
+                        <!-- <strong style="font-size: 1.1em;">{{ ticket.domain_info }}</strong> -->
+                        <span class="label {% if ticket.status=='Новая' %}label-primary{% elif ticket.status=='В работе' %}label-warning{% else %}label-success{% endif %}" 
+                              style="font-size: 12px; padding: 4px 8px;">
+                            {{ ticket.status }}
+                        </span>
+                    </div>
+
+                    <div style="margin-bottom: 5px; font-weight: bold; font-size: 14px; line-height: 1.4; max-height: 2.8em; overflow: hidden; text-overflow: ellipsis; word-break: break-word; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                        {{ ticket.title[:70] }}{% if ticket.title|length > 70 %}...{% endif %}
+                    </div>
+
+                    <hr style="margin: 0px; border-color: #d1d0d0; border-style: solid;">
+
+                    <div class="row" style="font-size: 13px; margin-top:5px; color: #555;">
+                        <div class="col-xs-7 text-left">
+                            <span class="glyphicon glyphicon-user"></span> 
+                            {{ ticket.author.full_name | format_fio or ticket.author.username }}
+                        </div>
+                        <div class="col-xs-5 text-right">
+                            {{ ticket.created_at.strftime('  %d.%m.%Y %H:%M') }}
+                            <span class="glyphicon glyphicon-time"></span> 
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+
+        {% if pagination and pagination.pages > 1 %}
+        <div style="margin-top: 15px; ">
+            <nav aria-label="Page navigation">
+                <ul class="pagination pagination-sm" style="display: flex; justify-content: center; margin: 0;">
+                    {% if pagination.has_prev %}
+                        <li class="previous">
+                            <a href="{{ url_for('index', page=pagination.prev_num, tab=tab, q=q) }}">
+                                <span aria-hidden="true">&larr;</span> Назад
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for p in pagination.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
+                        {% if p %}
+                            <li class="{% if p == pagination.page %}active{% endif %}">
+                                <a href="{{ url_for('index', page=p, tab=tab, q=q) }}">{{ p }}</a>
+                            </li>
+                        {% else %}
+                            <li class="disabled"><span>...</span></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if pagination.has_next %}
+                        <li class="next">
+                            <a href="{{ url_for('index', page=pagination.next_num, tab=tab, q=q) }}">
+                                Вперед <span aria-hidden="true">&rarr;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+
+<div class="panel panel-default col-xs-12 col-md-7" style="
+    max-height: calc(100vh - 150px); 
+    overflow-y: auto; 
+    position: sticky; 
+    top: 20px; 
+    padding: 0;
+    border-radius: 10px;
+">
+<div class="panel-body">
+    {% if selected_ticket %}
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <p style="margin: 0;">
+            <strong style="font-size: 17px;">ID {{ selected_ticket.id }} / Статус:</strong> 
+            <span style="font-size: 15px;" class="label {% if selected_ticket.status=='Новая' %}label-primary{% elif selected_ticket.status=='В работе' %}label-warning{% else %}label-success{% endif %}">
+                {{ selected_ticket.status }}
+            </span>
+                <!-- Информационная плашка о назначении -->
+                {% if selected_ticket.status == 'В работе' and selected_ticket.taken_by %}
+                <div style="padding: 10px 15px;  background-color: #fcfcfc; border-radius: 5px 5px 0 0;">
+                    <div class="text-muted" style="display: flex; align-items: center; justify-content: space-between;">
+                        <span>
+                            
+                            <strong>{{ selected_ticket.taken_by | format_fio or ticket.author.username  }}</strong> взял в работу
+                        </span>
+                        {% if selected_ticket.taken_at %}
+                        <small class="label label-default" style="font-weight: normal;">
+                            {{ selected_ticket.taken_at.strftime('%d.%m.%Y %H:%M') }}
+                        </small>
+                {% endif %}
+        </div>
+    </div>
+    {% endif %}
+        </p>
+
+    <p style="margin: 0px;">
+        <small class="text-muted" style="font-size: 15px; font-weight: bold;">
+            {{ selected_ticket.created_at.strftime('%d.%m.%Y %H:%M') }}
+        </small>
+    </p>
+    </div>
+   
+<hr style="margin-top: 10px; margin-bottom: 5px;">
+  
+        <div class="box">
+            <div class="row" style="margin-bottom: 0px;">
+                <div class="col-xs-12 col-sm-8">
+                    <div style="margin-top: 0; word-wrap: break-word; color: #000000;">
+                        <!-- <h4 style="margin-top: 0; margin-bottom: 8px;">Тема заявки</h4> -->
+                        <p style="margin-bottom: 8px; font-size: 16px; font-weight: 600; color: #000;">{{ selected_ticket.title | truncate(150) }}</p>
+                        <hr style="margin-bottom: 10px;">
+                        <!-- <h4 style="margin-top: 0; margin-bottom: 4px;">Описание</h4> -->
+                        <p class="description-text" style="font-size:14px; margin-bottom: 15px; font-weight: normal;">{{ selected_ticket.description }}</p>
+                    </div>
+                </div>
+                <!-- управление кнопками статуса заявки и кнопкой редактирования -->
+            <div style="margin-bottom: 0px;" class="col-xs-12 col-sm-4 text-right">
+            <div class="btn-group-vertical" style="width: 100%; display: flex; flex-direction: column; gap: 0;">
+                
+                {# Кнопки управления статусом (только для админа) #}
+                {% if user.role == 'admin' and selected_ticket.status != 'Закрыта' %}
+                    {% if selected_ticket.status == 'Новая' %}
+                        <a class="btn btn-warning" href="{{ url_for('update_status', ticket_id=selected_ticket.id, new_status='В работе', selected=selected_ticket.id, tab=tab) }}">
+                            В работу <span class="glyphicon glyphicon-play"></span>
+                        </a>
+                    {% elif selected_ticket.status == 'В работе' %}
+                        <a class="btn btn-success" href="{{ url_for('update_status', ticket_id=selected_ticket.id, new_status='Закрыта', selected=selected_ticket.id, tab=tab) }}">
+                            Закрыть <span class="glyphicon glyphicon-ok"></span>
+                        </a>
+                    {% endif %}
+                {% endif %}
+
+                {# Логика кнопки редактирования #}
+                {% if user.role == 'admin' %}
+                    {# Админ: всегда активна #}
+                    <a class="btn btn-primary btn-block" style="margin:0;" href="{{ url_for('edit_ticket', ticket_id=selected_ticket.id) }}">
+                        Редактировать <span class="glyphicon glyphicon-edit"></span>
+                    </a>
+                    <form method="post" action="{{ url_for('delete_ticket', ticket_id=selected_ticket.id) }}" style="margin:0; padding:0; width:100%;">
+                        <button type="submit" class="btn btn-danger btn-block" style="margin:0; display:block; width:100%; border-radius:0;" onclick="return confirm('Удалить заявку №{{ selected_ticket.id }}?');">
+                            Удалить <span class="glyphicon glyphicon-trash"></span>
+                        </button>
+                    </form>
+                    <a class="btn btn-default btn-block" style="margin:0;" href="{{ url_for('profile', user_id=selected_ticket.author.id, next=request.full_path) }}">
+                        Редактировать профиль <span class="glyphicon glyphicon-user"></span>
+                    </a>
+
+                {% elif user.role == 'user' %}
+                    {% if selected_ticket.user_id == user.id and selected_ticket.status == 'Новая' and selected_ticket.comments|length == 0 %}
+                        {# Пользователь: может удалить только свою новую заявку без комментариев #}
+                        <a class="btn btn-primary btn-block" style="margin:0;" href="{{ url_for('edit_ticket', ticket_id=selected_ticket.id) }}">
+                            Редактировать <span class="glyphicon glyphicon-edit"></span>
+                        </a>
+                        <form method="post" action="{{ url_for('delete_ticket', ticket_id=selected_ticket.id) }}" style="margin:0; padding:0; width:100%;">
+                            <button type="submit" class="btn btn-danger btn-block" style="margin:0; display:block; width:100%; border-radius:0;" onclick="return confirm('Удалить вашу заявку №{{ selected_ticket.id }}?');">
+                                Удалить <span class="glyphicon glyphicon-trash"></span>
+                            </button>
+                        </form>
+                        <a class="btn btn-default btn-block" style="margin:0;" href="{{ url_for('profile', next=request.full_path) }}">
+                            Редактировать профиль <span class="glyphicon glyphicon-user"></span>
+                        </a>
+                    {% elif selected_ticket.user_id == user.id and selected_ticket.status == 'Новая' %}
+                        <a class="btn btn-primary btn-block" disabled title="Вы не можете редактировать заявку в работе или закрытую" style="margin:0;" >
+                            Редактировать <span class="glyphicon glyphicon-edit"></span>
+                        </a>
+                        <button class="btn btn-danger btn-block" style="margin:0; display:block; width:100%; border-radius:0;" disabled title="Вы не можете удалить заявку в работе, закрытую или с комментариями">
+                            Удалить <span class="glyphicon glyphicon-trash"></span>
+                        </button>
+                        <a class="btn btn-default btn-block" style="margin:0;" href="{{ url_for('profile', next=request.full_path) }}">
+                            Редактировать профиль <span class="glyphicon glyphicon-user"></span>
+                        </a>
+                    {% else %}
+                        {# Пользователь: кнопки редактирования и удаления видны, но не активны #}
+                        <button class="btn btn-primary btn-block" style="margin:0;" disabled title="Вы не можете редактировать заявку в работе или закрытую">
+                            Редактировать <span class="glyphicon glyphicon-edit"></span>
+                        </button>
+                        <button class="btn btn-danger btn-block" style="margin:0; display:block; width:100%; border-radius:0;" disabled title="Вы не можете удалить заявку в работе, закрытую или с комментариями">
+                            Удалить <span class="glyphicon glyphicon-trash"></span>
+                        </button>
+                        <a class="btn btn-default btn-block" style="margin:0;" href="{{ url_for('profile', next=request.full_path) }}">
+                            Редактировать профиль <span class="glyphicon glyphicon-user"></span>
+                        </a>
+                    {% endif %}
+                {% endif %}
+
+            </div>
+        </div>
+            </div>
+            
+            <!-- таблица в описании заявки -->
+            <div class="row">
+    <div class="col-xs-12">
+        <div style="border-radius: 5px; overflow: hidden; border: 1px solid #ddd; margin-top: 15px;">
+            <table class="table table-bordered table-condensed table-hover" style="margin-bottom: 0; border: none;">
+                <tbody>
+                    <tr>
+                        <td class="active" style="width: 20%; border-top: none; border-left: none;">
+                            <strong><span class="glyphicon glyphicon-user"></span> Автор</strong>
+                        </td>
+                        <td style="width: 30%; border-top: none;">
+                            {{ selected_ticket.author.full_name or selected_ticket.author.username }}
+                        </td>
+                        <td class="active" style="width: 20%; border-top: none;">
+                            <strong><span class="glyphicon glyphicon-map-marker"></span> Корпус</strong>
+                        </td>
+                        <td style="width: 30%; border-top: none; border-right: none;">
+                            {{selected_ticket.author.building or '-' }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="active" style="border-left: none;"><strong><span class="glyphicon glyphicon-log-in"></span> Логин</strong></td>
+                        <td>{{ selected_ticket.author.username }} ({{ selected_ticket.author.role }})</td>
+                        <td class="active"><strong><span class="glyphicon glyphicon-home"></span> Кабинет</strong></td>
+                        <td style="border-right: none;">{{selected_ticket.author.room or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="active" style="border-left: none;"><strong><span class="glyphicon glyphicon-hdd"></span> ПК</strong></td>
+                        <td><code>{{ selected_ticket.author.computer_name or '-' }}</code></td>
+                        <td class="active"><strong><span class="glyphicon glyphicon-phone-alt"></span> Телефон</strong></td>
+                        <td style="border-right: none;">{{ selected_ticket.author.phone or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="active" style="border-left: none; border-bottom: none;"><strong><span class="glyphicon glyphicon-tower"></span> Сеть</strong></td>
+                        <td style="border-bottom: none;">
+                            <code>
+                                {% if selected_ticket.ip_address %}{{ selected_ticket.ip_address }}{% endif %}
+                                {% if selected_ticket.ip_address and selected_ticket.domain_info %} / {% endif %}
+                                {% if selected_ticket.domain_info %}{{ selected_ticket.domain_info }}{% endif %}
+                                {% if not selected_ticket.ip_address and not selected_ticket.domain_info %}Локальный вход{% endif %}
+                            </code>
+                        </td>
+                        <td class="active" style="border-bottom: none;"><strong><span class="glyphicon glyphicon-envelope"></span> Почта</strong></td>
+                        <td style="border-right: none; border-bottom: none;">{{ selected_ticket.author.mail or '-' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+            
+            <!-- Форма с кнопочкой отправки комментария -->
+        <form method="post" action="/add_comment/{{ selected_ticket.id }}?tab={{ tab }}" class="form" style="margin-top:15px; margin-bottom: 0px;">
+            <div class="input-group" style="display: flex;">
+                <textarea 
+                    name="comment" 
+                    class="form-control" 
+                    rows="2" 
+                    placeholder="Напишите комментарий..." 
+                    oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px';"
+                    style="
+                        resize: none; 
+                        overflow: hidden; 
+                        border-radius: 8px 0 0 0px; 
+                        flex: 1; 
+                        min-height: 54px;
+                    "
+                ></textarea>
+                
+                <span class="input-group-btn" style="width: auto;">
+                    <button 
+                        class="btn btn-primary" 
+                        type="submit" 
+                        style="
+                            height: 100%; 
+                            border-radius: 0px 8px 0px 0px; 
+                            padding: 0 20px; 
+                            display: flex; 
+                            flex-direction: column; 
+                            justify-content: center; 
+                            align-items: center;
+                        ">
+                        <span class="glyphicon glyphicon-send"></span>
+                        <small style="font-weight: bold; margin-top: 2px;">Отправить</small>
+                    </button>
+                </span>
+            </div>
+        </form>
+            
+        <!-- Форма с комментариями к заявке -->
+        <div class="panel panel-default" style="border: 1px solid #ddd; border-radius: 0 0px 5px 5px; background-color: #fff; padding: 5px; margin-bottom: 0px;">
+            <!-- <div class="panel-heading"><strong>Комментарии к заявке</strong></div> -->
+
+
+            <div class="panel-body" style="max-height: 500px; overflow-y: auto; background: #fdfdfd; ">
+                {% if selected_ticket.comments %}
+                        {% for comment in selected_ticket.comments | sort(attribute='created_at', reverse=True) %}
+                            <div style="display:flex; margin-bottom:20px;">  
+                                {% if comment.author.role == 'admin' %}
+                                    <div style="max-width: 80%; display: flex; flex-direction: column; align-items: flex-start;">
+                                        <span class="label label-primary" style="margin-bottom: 5px; font-size: 14px;">
+                                            {{ comment.author.full_name | format_fio or comment.author.username }}
+                                        </span>
+
+                                        <div class="well well-sm" style="
+                                            margin-bottom: 2px; 
+                                            background-color: #ffffff; 
+                                            white-space: pre-wrap; 
+                                            word-break: break-word;
+                                            font-size: 15px;
+                                            border-radius: 0 15px 15px 15px;
+                                        ">{{ comment.text }}</div>
+
+                                        <small class="text-muted" style="font-size: 11px; padding-left: 5px;">
+                                            {{ comment.created_at.strftime('%d.%m.%Y %H:%M') }}
+                                        </small>
+                                    </div>
+
+                                {% else %}
+                                    <div style="margin-left:auto; max-width: 80%; display: flex; flex-direction: column; align-items: flex-end;">
+                                        <span class="label label-success" style="margin-bottom: 5px; font-size: 14px;">
+                                            {{ comment.author.full_name | format_fio or comment.author.username }}
+                                        </span>
+
+                                        <div class="well well-sm" style="
+                                            margin-bottom: 2px; 
+                                            background-color: #f0f9f0; 
+                                            border-color: #d6e9c6;
+                                            white-space: pre-wrap; 
+                                            word-break: break-word;
+                                            font-size: 15px;
+                                            border-radius: 10px 0 10px 10px;
+                                        ">{{ comment.text }}</div>
+
+                                        <small class="text-muted" style="font-size: 11px; padding-right: 5px;">
+                                            {{ comment.created_at.strftime('%d.%m.%Y %H:%M') }}
+                                        </small>
+                                    </div>
+                                {% endif %}
+
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="alert alert-info" style="margin:0;">Комментариев пока нет.</div>
+                {% endif %}
+            </div>
+        </div>
+</div>
+        </div>
+        {% else %}
+        <div class="box"><p>Выберите заявку слева для просмотра подробностей.</p></div>
+        {% endif %}
+    
+  </div>
+</div>
+</div>
+
+{% endblock %}

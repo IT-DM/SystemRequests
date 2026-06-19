@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-6 col-md-offset-3">
+        <h3>Новая заявка</h3>
+        <form method="POST">
+            <div class="form-group">
+                <label>Тема проблемы</label>
+                <input type="text" name="title" class="form-control" placeholder=" " maxlength="127" required>
+            </div>
+            <div class="form-group">
+                <label>Подробное описание</label>
+                <textarea name="description" class="form-control" rows="5" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Имя компьютера</label>
+                <input type="text" name="computer_name" class="form-control" value="{{ request.form.get('computer_name') or user.computer_name or '' }}" placeholder=" ">
+            </div>
+            <div class="form-group">
+                <label>Корпус</label>
+                <input type="text" name="building" class="form-control" value="{{ request.form.get('building') or user.building or '' }}" placeholder="">
+            </div>
+            <div class="form-group">
+                <label>Кабинет</label>
+                <input type="text" name="room" class="form-control" value="{{ request.form.get('room') or user.room or '' }}" placeholder="">
+            </div>
+            <div class="form-group">
+                <label>Телефон для связи</label>
+                <input type="text" name="phone" class="form-control" value="{{ request.form.get('phone') or user.phone or '' }}" placeholder="Рабочий или мобильный телефон">
+            </div>
+            <div class="btn-toolbar">
+                <button type="submit" class="btn btn-success">Создать заявку</button>
+                <a href="/" class="btn btn-default">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

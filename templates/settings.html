@@ -1,0 +1,263 @@
+﻿{% extends "layout.html" %}
+{% block content %}
+<div class="row">
+
+    <div class="col-md-12">
+
+        <div class="page-header ">
+            
+            <h1>Настройка  конфигурации системы заявок</h1>
+        </div>
+
+    </div>
+
+
+    <div class="col-md-12">
+        <h3>Название системы</h3>
+        <form method="POST" action="{{ url_for('settings') }}" style="margin-bottom: 20px;">
+            <input type="hidden" name="action" value="update_site_name">
+            <div class="input-group">
+                <input type="text" name="site_name" class="form-control" 
+                    value="{{ config.namesite if config else 'Система заявок' }}" placeholder="Введите название...">
+                <span class="input-group-btn">
+                    <button class="btn btn-success" type="submit">Сохранить</button>
+                </span>
+            </div>
+            <p class="help-block">Это название будет отображаться в верхнем левом углу (шапке) сайта.</p>
+        </form>
+
+        <h3>Логотип</h3>
+        <form method="POST" action="{{ url_for('upload_logo') }}" enctype="multipart/form-data" class="form-inline">
+            <div class="form-group">
+                <input type="file" name="logo" class="form-control" style="display: inline-block; width: auto; vertical-align: middle;">
+                <button type="submit" class="btn btn-primary" style="vertical-align: middle;">
+                    <span class="glyphicon glyphicon-upload"></span> Загрузить
+                </button>
+            </div>
+        </form>
+        <br>
+        <p>Рекомендуемый размер: 40x40 пикселей. Форматы: PNG, JPG, GIF.</p>
+        
+        {% if logo_url %}
+            <div class="well" style="display: inline-block;">
+                <p><small class="text-muted">Текущий логотип:</small></p>
+                <img src="{{ logo_url }}" alt="Логотип" style="max-height: 40px;">
+            </div>
+        
+        {% endif %}
+    </div>
+
+
+    <div class="col-md-12">
+        <div class="page-header">
+            <!-- <a href="#add-form" class="btn btn-primary pull-right">Добавить домен</a> -->
+            <h3>Настройка доменов LDAP</h3>
+        </div>
+
+        {% if not configs %}
+            <div class="alert alert-info">Домены еще не настроены.</div>
+        {% endif %}
+
+        {% for config in configs %}
+        <div class="panel panel-default shadow-sm" style="margin-bottom: 25px;">
+            <div class="panel-heading" style="background-color: #777; color: white;">
+                <div class="row">
+                    <div class="col-md-10">
+                        <h3 class="panel-title" style="padding-top: 5px;">{{ config.connection_name or "Новое подключение" }}</h3>
+                    </div>
+                    <div class="col-md-2 text-right">
+                        
+                        
+                        <form action="{{ url_for('delete_ldap', ldap_id=config.id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Удалить этот домен?')">Удалить</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-6 form-group">
+                        <label>Имя домена:</label>
+                        <input type="text" class="form-control" value="{{ config.domain_name }}" readonly>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>IP сервера / Контроллер:</label>
+                        <input type="text" class="form-control" value="{{ config.server_ip }}" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Base DN (Путь к OU):</label>
+                    <input type="text" class="form-control" value="{{ config.base_dn }}" readonly>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 form-group">
+                        <label>Логин (Service Account):</label>
+                        <input type="text" class="form-control" value="{{ config.service_account }}" readonly>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>Пароль:</label>
+                        <input type="password" class="form-control" value="********" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <hr id="add-form">
+
+        <div class="panel panel-info">
+            <div class="panel-heading"><strong>Добавить новое подключение</strong></div>
+            <div class="panel-body">
+                <form method="POST">
+                    <input type="hidden" name="id" value="{{ form_data.id if form_data else '' }}">
+                    <div class="form-group">
+                        <label>Название подключения:</label>
+                        <input type="text" name="connection_name" class="form-control" placeholder="Напр: Основной контроллер" value="{{ form_data.connection_name if form_data else '' }}">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label>Имя домена:</label>
+                            <input type="text" name="domain_name" class="form-control" placeholder="domain.local" required value="{{ form_data.domain_name if form_data else '' }}">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label>IP сервера / Контроллер:</label>
+                            <input type="text" name="server_ip" class="form-control" placeholder="192.168.x.xx" required value="{{ form_data.server_ip if form_data else '' }}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Base DN (Путь к OU):</label>
+                        <input type="text" name="base_dn" class="form-control" placeholder="OU=Users,DC=partner,DC=local" value="{{ form_data.base_dn if form_data else '' }}">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label>Логин (Service Account):</label>
+                            <input type="text" name="service_account" class="form-control" placeholder="DOMAIN\User" value="{{ form_data.service_account if form_data else '' }}">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label>Пароль:</label>
+                            <input type="password" name="password" class="form-control" value="{{ form_data.password if form_data else '' }}">
+                            <p class="help-block">Если редактируете существующее подключение, оставьте поле пустым, чтобы сохранить текущий пароль.</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label class="text-primary">Название группы админов (CN):</label>
+                            <input type="text" name="admin_group_cn" class="form-control" value="{{ form_data.admin_group_cn if form_data else '' }}">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label class="text-primary">Полный путь группы (DN):</label>
+                            <input type="text" name="admin_group_dn" class="form-control" value="{{ form_data.admin_group_dn if form_data else '' }}">
+                        </div>
+                    </div>
+
+                    <div class="well text-right">
+                        <button type="submit" name="action" value="save" class="btn btn-success">Сохранить</button>
+                        <button type="submit" name="action" value="test" class="btn btn-info">Проверить подключение</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+        <div class="page-header">        
+            <h3>Настройки почтовых уведомлений</h3>
+        </div>
+
+<div class="panel panel-default" style="margin-top: 20px;">
+    <div class="panel-heading">
+        <h3 class="panel-title">Настройка сервисного аккаунта для Flask-Mail</h3>
+    </div>
+    <div class="panel-body">
+        <form method="POST">
+            <div class="row">
+                <div class="col-md-6 form-group">
+                    <label>SMTP Сервер</label>
+                    <input type="text" name="smtp_server" class="form-control" value="{{ mail_config.smtp_server or '' }}">
+                </div>
+                <div class="col-md-2 form-group">
+                    <label>Порт</label>
+                    <input type="number" name="smtp_port" class="form-control" value="{{ mail_config.smtp_port or 587 }}">
+                </div>
+                <div class="col-md-4 form-group">
+                    <label style="margin-top: 35px;">
+                        <input type="checkbox" name="use_tls" {% if mail_config.use_tls %}checked{% endif %}> TLS
+                        <input type="checkbox" name="use_ssl" {% if mail_config.use_ssl %}checked{% endif %}> SSL
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 form-group">
+                    <label>Логин (User)</label>
+                    <input type="text" name="smtp_user" class="form-control" value="{{ mail_config.smtp_user or '' }}">
+                </div>
+                <div class="col-md-6 form-group">
+                    <label>Пароль</label>
+                    <input type="password" name="smtp_password" class="form-control" placeholder="Оставьте пустым, чтобы сохранить текущий пароль">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Email отправителя (Sender)</label>
+                <input type="email" name="sender_email" class="form-control" value="{{ mail_config.sender_email or '' }}" placeholder="noreply@domain.com">
+            </div>
+            
+            <hr>
+            <div class="row">
+                <div class="col-md-8">
+                    <button type="submit" name="mail_action" value="save" class="btn btn-success">Сохранить конфигурацию</button>
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input type="email" name="test_email" class="form-control" placeholder="Email для теста">
+                        <span class="input-group-btn">
+                            <button type="submit" name="mail_action" value="test" class="btn btn-info">Тест</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="panel panel-default" style="margin-top: 20px;">
+    <div class="panel-heading">
+        <h3 class="panel-title">Почтовые ящики (для уведомлений)</h3>
+    </div>
+    <div class="panel-body">
+        <form method="POST">
+            <div class="input-group">
+                <input type="email" name="new_service_email" class="form-control" placeholder="example@sibnia.ru">
+                <span class="input-group-btn">
+                    <button type="submit" name="mail_action" value="add_email" class="btn btn-primary">Добавить почту</button>
+                </span>
+            </div>
+        </form>
+        <hr>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th style="width: 50px;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in service_emails %}
+                <tr>
+                    <td>{{ item.email }}</td>
+                    <td>
+                        <form method="POST" style="margin:0;">
+                            <input type="hidden" name="email_id" value="{{ item.id }}">
+                            <button type="submit" name="mail_action" value="delete_email" class="btn btn-danger btn-xs">Удалить</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+{% endblock %}
+<script> function editConfig(id, connection_name, domain_name, server_ip, base_dn, service_account, admin_group_cn, admin_group_dn) { document.querySelector("input[name=\"id\"]").value = id; document.querySelector("input[name=\"connection_name\"]").value = connection_name || ""; document.querySelector("input[name=\"domain_name\"]").value = domain_name || ""; document.querySelector("input[name=\"server_ip\"]").value = server_ip || ""; document.querySelector("input[name=\"base_dn\"]").value = base_dn || ""; document.querySelector("input[name=\"service_account\"]").value = service_account || ""; document.querySelector("input[name=\"admin_group_cn\"]").value = admin_group_cn || ""; document.querySelector("input[name=\"admin_group_dn\"]").value = admin_group_dn || ""; document.getElementById("add-form").scrollIntoView(); } </script>
+

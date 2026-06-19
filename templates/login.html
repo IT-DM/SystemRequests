@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-4 col-md-offset-4">
+        <div class="panel panel-default" style="margin-top: 50px;">
+            <div class="panel-heading"><h3 class="panel-title">Вход в систему</h3></div>
+            <div class="panel-body">
+                <form method="POST">
+                    
+                    <div class="form-group">
+                        <label>Логин</label>
+                        <input type="text" name="username" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Пароль</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+
+                    {% if configs %}
+                    <div class="form-group">
+                        <label>Организация</label>
+                        <select name="ldap_connection" class="form-control">
+                            {% for cfg in configs %}
+                                <option value="{{ cfg.id }}">{{ cfg.connection_name or cfg.domain_name or 'LDAP ' ~ cfg.id }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+
+                     <button type="submit" class="btn btn-primary btn-block">Войти</button>
+                </form>
+                <div style="margin-top:15px; font-size: 12px;" class="text-center text-muted">
+                  <!--Для теста: admin / admin123 -->  
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

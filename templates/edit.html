@@ -1,0 +1,118 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Редактирование заявки #{{ item.id }}</h2>
+
+<!-- <h3>Информация об авторе</h3>
+<div>
+    <dl class="dl-horizontal">
+        <dt>Имя пользователя</dt><dd>{{ item.author.username }}</dd>
+        {% if item.author.full_name %}
+        <dt>ФИО</dt><dd>{{ item.author.full_name }}</dd>
+        {% endif %}
+        {% if item.author.building %}
+        <dt>Корпус</dt><dd>{{ item.author.building }}</dd>
+        {% endif %}
+        {% if item.author.room %}
+        <dt>Кабинет</dt><dd>{{ item.author.room }}</dd>
+        {% endif %}
+        {% if item.author.phone %}
+        <dt>Телефон</dt><dd>{{ item.author.phone }}</dd>
+        {% endif %}
+    </dl>
+</div> -->
+
+<hr>
+
+<form method="post">
+    <div class="form-horizontal">
+        <div class="form-group">
+            <label class="control-label col-md-2">Заголовок</label>
+            <div class="col-md-10"><input name="title" value="{{ item.title }}" class="form-control" maxlength="127"/></div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-2">Описание</label>
+            <div class="col-md-10"><textarea name="description" class="form-control" rows="3">{{ item.description }}</textarea></div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-2">Имя компьютера</label>
+            <div class="col-md-10"><input name="computer_name" value="{{ item.computer_name }}" class="form-control" /></div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-2">Корпус</label>
+            <div class="col-md-10"><input name="building" value="{{ item.building }}" class="form-control" /></div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-2">Кабинет</label>
+            <div class="col-md-10"><input name="room" value="{{ item.room }}" class="form-control" /></div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-2">Телефон</label>
+            <div class="col-md-10"><input name="phone" value="{{ item.phone }}" class="form-control" /></div>
+        </div>
+
+        {% if user.role == 'admin' %}
+        <div class="form-group">
+            <label class="control-label col-md-2">Статус</label>
+            <div class="col-md-10">
+                <select name="status" class="form-control">
+                    <option {% if item.status == 'Новая' %}selected{% endif %}>Новая</option>
+                    <option {% if item.status == 'В работе' %}selected{% endif %}>В работе</option>
+                    <option {% if item.status == 'Закрыта' %}selected{% endif %}>Закрыта</option>
+                </select>
+            </div>
+        </div>   
+            {% else %}
+                    <div class="form-group">
+                    <label class="control-label col-md-2">Статус</label>
+                    <div class="col-md-10">
+                    <select name="status" class="form-control">
+                    <option {% if item.status == 'Новая' %}selected{% endif %}>Новая</option>
+                </select>
+            </div>
+        </div>  
+
+        {% endif %}
+
+        <input type="hidden" name="author" value="{{ item.author }}">
+        <input type="hidden" name="action" value="save">
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Сохранить" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+</form>
+
+<hr>
+<!-- <h3>Комментарии</h3>
+
+{% if item.comments %}
+<div class="well" style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;">
+    {% for comment in item.comments | sort(attribute='created_at') %}
+    <div class="panel panel-default" style="margin-bottom: 15px;">
+        <div class="panel-heading" style="background-color: #f5f5f5; padding: 10px;">
+            <strong>{{ comment.author.username }}</strong>
+            <span class="text-muted pull-right" style="font-size: 12px;">
+                {{ comment.created_at.strftime('%d.%m.%Y %H:%M:%S') }}
+            </span>
+        </div>
+        <div class="panel-body" style="padding: 10px;">
+            {{ comment.text | replace('\n', '<br>') | safe }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">Комментариев еще нет.</div>
+{% endif %}
+
+<form method="post" style="margin-top: 20px;">
+    <input type="hidden" name="action" value="comment">
+    
+    <div class="form-group">
+        <label>Добавить комментарий:</label>
+        <textarea name="comment" class="form-control" rows="3" placeholder="Введите ваш комментарий..."></textarea>
+    </div>
+    <button type="submit" class="btn btn-success">Добавить комментарий</button>
+</form>
+{% endblock %} -->

@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Удалить?</h2>
+<h3>Вы уверены, что хотите удалить эту заявку?</h3>
+<div>
+    <dl class="dl-horizontal">
+        <dt>Заголовок</dt><dd>{{ item.title }}</dd>
+        <dt>Автор</dt><dd>{{ item.author }}</dd>
+    </dl>
+    <form method="post">
+        <input type="submit" value="Удалить" class="btn btn-danger" /> |
+        <a href="{{ url_for('index') }}">Отмена</a>
+    </form>
+</div>
+{% endblock %}

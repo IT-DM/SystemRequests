@@ -1,0 +1,114 @@
+﻿{% extends "layout.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-10 col-md-offset-1">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">Информация</h4>
+                    </div>
+                    <div class="panel-body">
+                        <p><strong>Пользователь:</strong> {{ user.username }}</p>
+                        <p><strong>ФИО:</strong> {{ user.full_name or 'Не задано' }}</p>
+                        <p><strong>Корпус:</strong> {{ user.building or '—' }}</p>
+                        <p><strong>Кабинет:</strong> {{ user.room or '—' }}</p>
+                        <p><strong>Телефон:</strong> {{ user.phone or '—' }}</p>
+                        <p><strong>Номер компьютера:</strong> {{ user.computer_name or '—' }}</p>
+                        <p><strong>Почта:</strong> {{ user.mail or '—' }}</p>
+                        <p><strong>Роль:</strong> {% if user.role == 'admin' %}Админ{% elif user.role == 'user' %}Пользователь{% endif %}</p>
+                        <p>
+                            <span class="label label-{{ 'success' if user.notify_by_email else 'default' }}">
+                                {% if user.notify_by_email %}Уведомления включены{% else %}Уведомления выключены{% endif %}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                <div class="well text-center">
+                    <h4>Совет</h4>
+                    <p>Заполните информацию, чтобы коллегам было проще с вами связаться.</p>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Редактирование профиля</h3>
+                    </div>
+                    <div class="panel-body">
+                        <form method="POST">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>ФИО</label>
+                                        <input type="text" name="full_name" class="form-control" value="{{ user.full_name or '' }}" placeholder="Фамилия Имя Отчество">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Имя пользователя</label>
+                                        <input type="text" class="form-control" value="{{ user.username }}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Корпус</label>
+                                        <input type="text" name="building" class="form-control" value="{{ user.building or '' }}" placeholder="Номер корпуса">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Кабинет</label>
+                                        <input type="text" name="room" class="form-control" value="{{ user.room or '' }}" placeholder="Номер кабинета">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Телефон</label>
+                                        <input type="text" name="phone" class="form-control" value="{{ user.phone or '' }}" placeholder="Рабочий телефон или мобильный">
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Имя компьютера</label>
+                                        <input type="text" name="computer_name" class="form-control" value="{{ user.computer_name or '' }}" placeholder="Номер компьютера">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Электронная почта</label>
+                                        <input type="email" name="mail" class="form-control" value="{{ user.mail or '' }}" placeholder="Эл. почта для уведомлений">
+                                    </div>
+                                    <div class="form-group" style="margin-top:5px; margin-bottom:0;">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="notify_by_email" {% if user.notify_by_email %}checked{% endif %}>
+                                                Получать уведомления на электронную почту
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6"></div>
+                            </div>
+
+                            <div class="form-group text-right">
+                                <button type="submit" class="btn btn-success">Сохранить</button>
+                                <a href="/" class="btn btn-default">Отмена</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
